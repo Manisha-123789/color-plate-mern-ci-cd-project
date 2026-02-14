@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
+import axios, { AxiosError } from 'axios';
+
 
 export const useApi = (method, url, body = {},) => {
 
@@ -17,7 +19,8 @@ export const useApi = (method, url, body = {},) => {
                     setData(response.data.data || response.data.message)
                 }
 
-            } catch (err : any) {
+            } catch (error : unknown) {
+                const err = error as AxiosError;
                 console.log(err)
                 if (err?.status === 404) {
                     setError(err?.message)
