@@ -1,12 +1,13 @@
-"use client";
-import { Box, Button, Grid, Typography } from "@mui/material";
-import { ToastContainer } from "react-toastify";
-import { handleCopyText } from "../../../utils/handleCopyText";
-import { rgbaToHex } from "../../../utils/rgbaToHex";
-import { useEffect, useRef, useState, useMemo } from "react";
-import html2canvas from "html2canvas";
-import { DownloadOutlined, LinkOutlined } from "@mui/icons-material";
-import { usePathname } from "next/navigation";
+'use client';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import { handleCopyText } from '../../../utils/handleCopyText';
+import { rgbaToHex } from '../../../utils/rgbaToHex';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import html2canvas from 'html2canvas';
+import { DownloadOutlined, LinkOutlined } from '@mui/icons-material';
+import { usePathname } from 'next/navigation';
+import { apiCall } from '../../../utils/apiCall';
 
 interface Palette {
   id: string;
@@ -24,24 +25,25 @@ export function ColorDetails({ id }: ColorDetailsProps) {
 
   //Load palette data from localStorage
   useEffect(() => {
-    const getPalette = (key: string): Palette[] =>
-      JSON.parse(localStorage.getItem(key) || "[]");
+    const getColorDetails = async () => {
+      try {
+        const res = await apiCall(
+          'GET',
+          `${process.env.NEXT_PUBLIC_BASE_URI}color-palette/color-palette-details/${id}`,
+        );
+        setPalette(res.data);
+      } catch {
+        alert('Something went wrong. please try again later');
+      }
+    };
 
-    const allPalettes = getPalette("allColorPalette");
-    const selectedPalettes = getPalette("selectedColorPalette");
-
-    const found =
-      allPalettes.find((unit) => unit.id === id) ||
-      selectedPalettes.find((unit) => unit.id === id) ||
-      null;
-
-    setPalette(found);
+    getColorDetails();
   }, [id]);
 
   // Precompute colors in hex format
   const hexColors = useMemo(
     () => palette?.colors.map((c) => rgbaToHex(c)) || [],
-    [palette]
+    [palette],
   );
 
   // Download palette as image
@@ -51,14 +53,14 @@ export function ColorDetails({ id }: ColorDetailsProps) {
       scrollY: -window.scrollY,
       onclone: (clonedDoc) => {
         const clonedDiv = clonedDoc.getElementById(palette.id);
-        clonedDiv?.querySelectorAll(".nestedDiv")?.forEach((el) => {
-          (el as HTMLElement).style.borderRadius = "0";
+        clonedDiv?.querySelectorAll('.nestedDiv')?.forEach((el) => {
+          (el as HTMLElement).style.borderRadius = '0';
         });
       },
     });
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.download = `Color Palette By Manisha Bavniya ${palette.id}.png`;
-    link.href = canvas.toDataURL("image/png");
+    link.href = canvas.toDataURL('image/png');
     link.click();
   };
 
@@ -96,14 +98,14 @@ export function ColorDetails({ id }: ColorDetailsProps) {
               alignItems="flex-end"
               paddingLeft={1}
               sx={{
-                cursor: "pointer",
+                cursor: 'pointer',
                 borderRadius:
                   i === 0
-                    ? "10px 10px 0 0"
+                    ? '10px 10px 0 0'
                     : i === palette.colors.length - 1
-                    ? "0 0 10px 10px"
-                    : 0,
-                "&:hover .color-value": { opacity: 1 },
+                      ? '0 0 10px 10px'
+                      : 0,
+                '&:hover .color-value': { opacity: 1 },
               }}
             >
               <Typography
@@ -112,8 +114,8 @@ export function ColorDetails({ id }: ColorDetailsProps) {
                 color="white"
                 sx={{
                   opacity: 0,
-                  transition: "opacity 0.2s ease-in-out",
-                  backgroundColor: "rgba(0,0,0,0.5)",
+                  transition: 'opacity 0.2s ease-in-out',
+                  backgroundColor: 'rgba(0,0,0,0.5)',
                   px: 1,
                   py: 0.5,
                   borderRadius: 1,
@@ -136,11 +138,11 @@ export function ColorDetails({ id }: ColorDetailsProps) {
           variant="outlined"
           sx={{
             color: palette.colors[4],
-            borderColor: palette.colors[0] || "grey",
-            "&:hover": {
+            borderColor: palette.colors[0] || 'grey',
+            '&:hover': {
               borderColor: palette.colors[4],
               color: palette.colors[4],
-              backgroundColor: "white",
+              backgroundColor: 'white',
             },
           }}
           onClick={handleDownload}
@@ -154,11 +156,11 @@ export function ColorDetails({ id }: ColorDetailsProps) {
           variant="outlined"
           sx={{
             color: palette.colors[4],
-            borderColor: palette.colors[0] || "grey",
-            "&:hover": {
+            borderColor: palette.colors[0] || 'grey',
+            '&:hover': {
               borderColor: palette.colors[4],
               color: palette.colors[4],
-              backgroundColor: "white",
+              backgroundColor: 'white',
             },
           }}
           onClick={handleCopyLink}
@@ -182,7 +184,7 @@ export function ColorDetails({ id }: ColorDetailsProps) {
             flexDirection="column"
             alignItems="center"
             gap={0.5}
-            sx={{ cursor: "pointer" }}
+            sx={{ cursor: 'pointer' }}
           >
             <Box
               width={40}
@@ -191,10 +193,16 @@ export function ColorDetails({ id }: ColorDetailsProps) {
               bgcolor={color}
               onClick={(e) => handleCopyText(e, color)}
             />
-            <Typography variant="caption" onClick={(e) => handleCopyText(e, color)}>
+            <Typography
+              variant="caption"
+              onClick={(e) => handleCopyText(e, color)}
+            >
               {color}
             </Typography>
-            <Typography variant="caption" onClick={(e) => handleCopyText(e, hexColors[i])}>
+            <Typography
+              variant="caption"
+              onClick={(e) => handleCopyText(e, hexColors[i])}
+            >
               {hexColors[i]}
             </Typography>
           </Box>
