@@ -17,7 +17,7 @@ export const getPalette = async (req, res) => {
                             : `rgba(${r},${g},${b},0.${i * 2 + 2})`
                     );
 
-                    return { colors: rgba };
+                    return { colors: rgba, wishlist : false};
                 });
             }
             const colorPalette = generateColorPalette();
@@ -30,7 +30,7 @@ export const getPalette = async (req, res) => {
     }
 };
 
-
+//save your custom palette
 export const saveCustomPalette = async (req, res) => {
     try {
         let customPalette = req.body;
@@ -41,4 +41,132 @@ export const saveCustomPalette = async (req, res) => {
     }
 };
 
+//
+export const saveInYourCollection = async (req, res) => {
+    try {
 
+        const updated = await Palette.findByIdAndUpdate(
+            req.params.id,
+            { wishlist: req.body.wishlist },
+            { new: true }
+        );
+
+        
+        
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: "Palette not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Wishlist updated",
+            data: updated
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+export const getWishlist = async (req, res) => {
+    try {
+
+        const palettes = await Palette.find(
+            { wishlist: true },
+        );
+        
+        if (!palettes) {
+            return res.status(404).json({
+                success: false,
+                message: "wishlist not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Wishlist",
+            data: palettes
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+export const getDetails = async (req, res) => {
+    try {
+        let id = req.params.id.trim()
+
+        const palette = await Palette.findById(
+            id
+        );
+
+        
+        
+        if (!palette) {
+            return res.status(404).json({
+                success: false,
+                message: "Something went wrong. please try again later"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Details",
+            data: palette
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+
+export const removeFromWishlist = async (req, res) => {
+    try {
+   const ids = req.body;
+   
+        const updated = await Palette.updateMany(
+              { _id: { $in: ids } },   
+  { $set: { wishlist: false } },
+            { new: true }
+        );
+
+        
+        
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: "Palette not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Wishlist updated",
+            data: updated
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};

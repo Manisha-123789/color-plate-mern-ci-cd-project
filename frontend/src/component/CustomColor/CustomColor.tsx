@@ -4,17 +4,20 @@ import { useEffect, useState } from "react";
 import { MuiColorInput } from "mui-color-input";
 import { v4 as uuidv4 } from "uuid";
 import { useApi } from '@/hooks/useApi';
+import { apiCall } from '../../../utils/apiCall';
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 interface Palette {
-  id: string;
   colors: string[];
+  wishlist: true;
 }
 
 export function CustomColor() {
   const [colors, setColors] = useState<Palette[]>([
     {
-      id: "29228a64-505c-47d1-a949-55f2ff50ae55",
       colors: ["#1f2041", "#4B3F72", "#417B5A", "#d0ceba", "#E9D2C0"],
+      wishlist: true
     },
   ]);
   const [saveThisPalette, setSaveThisPalette] = useState();
@@ -44,13 +47,12 @@ export function CustomColor() {
     );
   };
 
-  const handleSaveYourCustomPalette = () => {
-    const existing = JSON.parse(localStorage.getItem("selectedColorPalette") || "[]");
-    const updatedPalette = colors.map((p) => ({ ...p, id: uuidv4() }));
-    const paletteToSave = [...existing, ...updatedPalette];
-    localStorage.setItem("selectedColorPalette", JSON.stringify(paletteToSave));
-    setSaveThisPalette(paletteToSave)
-    // console.log("Saved palette:", paletteToSave, data);
+  const handleSaveYourCustomPalette  = async () => {
+    const customColor = colors[0];
+  const res = await  apiCall('POST', `${process.env.NEXT_PUBLIC_BASE_URI}color-palette/`, customColor)
+    if(res.message && res.success){
+      toast(res.message)
+    }
   };
 
 //   useEffect(()=>{
@@ -115,6 +117,7 @@ export function CustomColor() {
           SAVE
         </Button>
       </Grid>
+      <ToastContainer/>
     </Box>
   );
 }

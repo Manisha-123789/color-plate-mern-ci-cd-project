@@ -10,7 +10,6 @@ interface ProductPageProps {
 
 export default function Page({params} : ProductPageProps) {
  const id = params.id;
- console.log(id, 'kkkkkkkkkkk')
   return (
     <ColorDetails id={id}/>
     
